@@ -8,7 +8,7 @@ url = 'https://www.cloudflare.com/ips-v6'
 num_threads = 60
 ip_list = 'valid_ip.txt'
 output = 'cf_checked.txt'
-timeout = 0.1
+timeout = 150/1000
 # ----------
 
 host = urllib.parse.urlsplit(url).hostname
@@ -22,13 +22,13 @@ output = open(output, 'w')
 count = 0
 def check_ip(ip):
     global count
-    print('{0}% checking: {1}'.format(format(count/total_line*100,'.2f'),ip))
+    print(f'{format(count/total_line*100,".2f")}% checking: {ip}')
     
     try:
         pool = urllib3.HTTPSConnectionPool(ip, server_hostname=host,retries=False) 
-        response = pool.urlopen('GET',url, assert_same_host=False, timeout =timeout)
+        response = pool.urlopen('GET',url, assert_same_host=False, timeout=timeout)
         
-        if response.status==200:
+        if response.status == 200:
             return ip
         return None
     except:
@@ -39,12 +39,12 @@ def thread_function():
         global count
         line_count = count
         count += 1
-        if(line_count<total_line):
+        if(line_count < total_line):
             ip = ip_list[line_count]
             valid_ip = check_ip(ip)
             if valid_ip:
                 global output
-                output.write(valid_ip + '\n')
+                output.write(f'{valid_ip}\n')
                 output.flush()
         else:
             break
@@ -59,5 +59,5 @@ for i in range(num_threads):
 for thread in threads:
     thread.join()
 
-print('time: {}s'.format(time.time()-start))
+print(f'time: {time.time() - start}s')
 print('Done')
